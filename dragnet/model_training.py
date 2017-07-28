@@ -132,8 +132,8 @@ class DragnetModelTrainer(object):
         features_to_use = a list of the features to use.  Must be one of
             the features known by AllFeatures
         """
-        from dragnet import AllFeatures
-        from dragnet.blocks import TagCountReadabilityBlockifier as Blkr
+        from . import AllFeatures
+        from .blocks import TagCountReadabilityBlockifier as Blkr
 
         from mozsci.map_train import run_train_models
 
