@@ -14,7 +14,8 @@ from lxml import etree
 def add_plot_title(ti_str):
     """Add a string as a title on top of a subplot"""
     import pylab as plt
-    plt.figtext(0.5, 0.94, ti_str, ha='center', color='black', weight='bold', size='large')
+    plt.suptitle(ti_str)
+    # plt.figtext(0.5, 0.94, ti_str, ha='center', color='black', weight='bold', size='large')
 
 
 re_has_text = re.compile("^\s*<text")
@@ -91,17 +92,25 @@ def read_gold_standard(datadir, fileroot, cetr=False):
     return ret
 
 
-def get_list_all_corrected_files(datadir):
+def get_list_all_corrected_files(datadir, limit_file=None):
     """
         Given datadir, return a list of tuples
             (file, fileroot)
         for all the corrected files
     """
+    permitted_ids = None
+
+    if limit_file:
+        with open(limit_file) as infile:
+            permitted_ids = {line.strip() for line in infile}
+
     ret = []
     files = glob.glob(datadir + "/Corrected/*")
     for file in files:
         mo = re.search('Corrected\/(.+)\.html\.corrected\.txt$', file)
         fileroot = mo.group(1)
+        if permitted_ids is not None and fileroot not in permitted_ids:
+            continue
         ret.append((file, fileroot))
     return ret
 

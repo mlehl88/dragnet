@@ -5,6 +5,10 @@ import io
 import re
 import json
 import numpy as np
+import matplotlib
+from tqdm import tqdm
+
+matplotlib.use('Agg')
 import pylab as plt
 import os
 
@@ -128,8 +132,8 @@ class DragnetModelTrainer(object):
         features_to_use = a list of the features to use.  Must be one of
             the features known by AllFeatures
         """
-        from . import AllFeatures
-        from .blocks import TagCountReadabilityBlockifier as Blkr
+        from dragnet import AllFeatures
+        from dragnet.blocks import TagCountReadabilityBlockifier as Blkr
 
         from mozsci.map_train import run_train_models
 
@@ -237,7 +241,7 @@ def accuracy_auc(y, ypred, weights=None):
 
 def evaluate_models_tokens(datadir, dragnet_model, figname_root=None,
                            tokenizer=simple_tokenizer, cetr=False,
-                           content_or_comments='both'):
+                           content_or_comments='both', limit_file=None):
     """
     Evaluate a trained model on the token level.
 
@@ -255,8 +259,9 @@ def evaluate_models_tokens(datadir, dragnet_model, figname_root=None,
         saves png files
     returns scores
     """
-    all_files = get_list_all_corrected_files(datadir)
+    all_files = get_list_all_corrected_files(datadir, limit_file=limit_file)
 
+    print('Found %d files in root dir' % len(all_files))
     gold_standard_tokens = {}
     for fname, froot in all_files:
         content, comments = read_gold_standard(datadir, froot, cetr)
@@ -280,7 +285,7 @@ def evaluate_models_tokens(datadir, dragnet_model, figname_root=None,
         errors = np.zeros((len(gold_standard_tokens), 3))
 
     k = 0
-    for froot, gstok in gold_standard_tokens.iteritems():
+    for froot, gstok in tqdm(gold_standard_tokens.iteritems(), total=len(gold_standard_tokens)):
         html, encoding = read_HTML_file(datadir, froot)
         if use_list:
             for i in range_(len(dragnet_model)):
@@ -290,8 +295,9 @@ def evaluate_models_tokens(datadir, dragnet_model, figname_root=None,
                     html, gstok, dm, tokenizer=tokenizer)
         else:
             dm = lambda x: dragnet_model.analyze(x, encoding=encoding)
-            errors[k, :] = run_score_content_detection(
-                html, gstok, dragnet_model.analyze, tokenizer=tokenizer)
+            tmp = run_score_content_detection(html, gstok, dragnet_model.analyze,
+                                                    tokenizer=tokenizer)
+            errors[k, :] = tmp
         k += 1
 
     # make some plots
@@ -306,7 +312,7 @@ def evaluate_models_tokens(datadir, dragnet_model, figname_root=None,
             plt.hist(errors[:, k], 20)
             plt.title("%s %s" % (ti[k], np.mean(errors[:, k])))
 
-        add_plot_title("Token level evaluation")
+        # add_plot_title("Token level evaluation")
         plt.tight_layout()
         fig.show()
 
