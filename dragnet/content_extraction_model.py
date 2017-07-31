@@ -59,7 +59,7 @@ class ContentExtractionModel(object):
         0<= thres <= 1.0"""
         self._threshold = thres
 
-    def analyze(self, s, blocks=False, encoding=None, parse_callback=None):
+    def analyze(self, s, blocks=False, encoding=None, parse_callback=None, **kwargs):
         """
         Given an HTML string, extract just its main content or content+comments
         and return it as a string or as a sequence of blocks.

@@ -24,7 +24,7 @@ from .data_processing import (simple_tokenizer, DragnetModelData, read_gold_stan
 
 
 def run_score_content_detection(html, gold_standard, content_detector,
-                                tokenizer=simple_tokenizer):
+                                tokenizer=simple_tokenizer, path=None):
     """
     Input:
         html = html string
@@ -34,7 +34,7 @@ def run_score_content_detection(html, gold_standard, content_detector,
     Output:
         the scoring metrics
     """
-    content = content_detector(html)
+    content = content_detector(html, path=path)
     content_tokens = tokenizer(content)
     return evaluation_metrics(content_tokens, gold_standard, bow=False)
 
@@ -296,7 +296,7 @@ def evaluate_models_tokens(datadir, dragnet_model, figname_root=None,
         else:
             dm = lambda x: dragnet_model.analyze(x, encoding=encoding)
             tmp = run_score_content_detection(html, gstok, dragnet_model.analyze,
-                                                    tokenizer=tokenizer)
+                                                    tokenizer=tokenizer, path=froot)
             errors[k, :] = tmp
         k += 1
 
