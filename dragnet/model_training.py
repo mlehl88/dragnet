@@ -241,7 +241,8 @@ def accuracy_auc(y, ypred, weights=None):
 
 def evaluate_models_tokens(datadir, dragnet_model, figname_root=None,
                            tokenizer=simple_tokenizer, cetr=False,
-                           content_or_comments='both', limit_file=None):
+                           content_or_comments='both',
+                           limit_file=None, limit_regex='.*'):
     """
     Evaluate a trained model on the token level.
 
@@ -259,11 +260,13 @@ def evaluate_models_tokens(datadir, dragnet_model, figname_root=None,
         saves png files
     returns scores
     """
-    all_files = get_list_all_corrected_files(datadir, limit_file=limit_file)
+    all_files = get_list_all_corrected_files(datadir,
+                                             limit_file=limit_file,
+                                             limit_regex=limit_regex)
 
     print('Found %d files in root dir' % len(all_files))
     gold_standard_tokens = {}
-    for fname, froot in all_files:
+    for fname, froot in sorted(all_files, key=lambda x:x[1]):
         content, comments = read_gold_standard(datadir, froot, cetr)
         if content_or_comments == 'content':
             gold = content

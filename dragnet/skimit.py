@@ -1,5 +1,7 @@
+import backoff
 import requests
 import requests_cache
+import time
 
 from dragnet import ContentExtractionModel, content_extractor
 from dragnet.diffbot_client import DiffbotClient
@@ -13,8 +15,13 @@ token = 'a2921a0004d2602f6e0e368ee876204d'
 api = "article"
 
 
+# @backoff.on_exception(backoff.expo, Exception, max_tries=3)
 def call_diffbot(url):
-    response = diffbot.request(url, token, api, fields=['title', 'text'])
+    response = diffbot.request(url, token, api, fields=['title', 'text'], timeout=30000*1)
+    time.sleep(2)
+    if 'errorCode' in response:
+        print('Failed to extract', url, response)
+        return ''
     return response['objects'][0]['text']
 
 
@@ -54,6 +61,8 @@ if __name__ == '__main__':
 
     evaluate_models_tokens('../content_data_2017-02-15-dragnet-format',
                            model,
-                           limit_file='../content_data_2017-02-15-dragnet-format/test.txt',
                            content_or_comments='content',
-                           figname_root='output_%s' % name)
+                           figname_root='output_%s' % name,
+                           limit_file='../content_data_2017-02-15-dragnet-format/test.txt',
+                           limit_regex='.*' # TODO try 'smart.*'
+                           )

@@ -92,7 +92,7 @@ def read_gold_standard(datadir, fileroot, cetr=False):
     return ret
 
 
-def get_list_all_corrected_files(datadir, limit_file=None):
+def get_list_all_corrected_files(datadir, limit_file=None, limit_regex='.*'):
     """
         Given datadir, return a list of tuples
             (file, fileroot)
@@ -110,6 +110,8 @@ def get_list_all_corrected_files(datadir, limit_file=None):
         mo = re.search('Corrected\/(.+)\.html\.corrected\.txt$', file)
         fileroot = mo.group(1)
         if permitted_ids is not None and fileroot not in permitted_ids:
+            continue
+        if not re.match(limit_regex, fileroot):
             continue
         ret.append((file, fileroot))
     return ret
